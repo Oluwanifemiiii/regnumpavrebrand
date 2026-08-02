@@ -1,0 +1,26 @@
+{
+  "name": "regnum-pavilion",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Regnum Pavilion — hotel, restaurant, boardroom & event hall website (React + Supabase)",
+  "scripts": {
+    "optimize:images": "node scripts/optimize-images.mjs",
+    "predev": "node scripts/optimize-images.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/optimize-images.mjs",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "sharp": "^0.35.3",
+    "vite": "^5.4.8"
+  }
+}

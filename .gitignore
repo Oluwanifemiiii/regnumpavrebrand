@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.local
+.env.*.local
+.DS_Store
+*.log
+.vite
+handoff_raw
+.claude
+# Pristine backups of original (pre-optimization) images
+public/.image-originals
