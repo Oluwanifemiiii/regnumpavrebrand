@@ -27,8 +27,11 @@ import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const PUBLIC_DIR = path.resolve(__dirname, '..', 'public')
-const ORIGINALS_DIR = path.join(PUBLIC_DIR, '.image-originals')
+const ROOT = path.resolve(__dirname, '..')
+const PUBLIC_DIR = path.join(ROOT, 'public')
+// Kept at the repo root (NOT inside public/) so Vite never copies these large
+// pristine originals into the published dist/ build.
+const ORIGINALS_DIR = path.join(ROOT, '.image-originals')
 const MANIFEST_PATH = path.join(ORIGINALS_DIR, 'manifest.json')
 
 const RASTER = /\.(jpe?g|png)$/i

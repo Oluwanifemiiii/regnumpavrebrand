@@ -8,9 +8,11 @@
     "optimize:images": "node scripts/optimize-images.mjs",
     "predev": "node scripts/optimize-images.mjs",
     "dev": "vite",
-    "prebuild": "node scripts/optimize-images.mjs",
     "build": "vite build",
     "preview": "vite preview"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

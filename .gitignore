@@ -11,4 +11,4 @@ dist-ssr
 handoff_raw
 .claude
 # Pristine backups of original (pre-optimization) images
-public/.image-originals
+.image-originals

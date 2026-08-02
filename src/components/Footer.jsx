@@ -46,7 +46,7 @@ export default function Footer() {
           </nav>
         </div>
       </footer>
-      <div className="footer-legal">© 2026 Regnum Pavilion. All rights reserved.</div>
+      <div className="footer-legal">© 2026 Regnum Pavilion. All rights reserved. Made by Oluwanifemi</div>
     </>
   )
 }
