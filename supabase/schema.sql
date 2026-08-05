@@ -131,3 +131,8 @@ begin
     );
   end loop;
 end $$;
+
+-- ============================================================================
+-- Room availability & stock lives in a separate file so it can be re-run on
+-- its own. After this schema, also run:  supabase/availability.sql
+-- ============================================================================

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import Placeholder from '../components/Placeholder.jsx'
 import { Field, Select, FormStatus } from '../components/Field.jsx'
 import { getRoom, naira } from '../data/rooms.js'
-import { insertInto } from '../lib/db'
+import { bookRoom } from '../lib/db'
 import NotFound from './NotFound.jsx'
 
 export default function RoomDetail() {
@@ -27,12 +27,21 @@ export default function RoomDetail() {
 
   const onSubmit = async (e) => {
     e.preventDefault()
+    if (!form.check_in || !form.check_out) {
+      setStatus({ ok: false, message: 'Please choose check-in and check-out dates.' })
+      return
+    }
+    if (form.check_out <= form.check_in) {
+      setStatus({ ok: false, message: 'Check-out must be after check-in.' })
+      return
+    }
     setBusy(true)
     setStatus(null)
-    const res = await insertInto('room_bookings', {
+    // book_room checks stock for these dates and only inserts if a unit is free.
+    const res = await bookRoom({
       room_type: room.name,
-      check_in: form.check_in || null,
-      check_out: form.check_out || null,
+      check_in: form.check_in,
+      check_out: form.check_out,
       guests: form.guests,
       full_name: form.full_name,
       email: form.email,
@@ -43,7 +52,8 @@ export default function RoomDetail() {
       setStatus({ ok: true, message: 'Booking request received — we’ll confirm by email shortly.' })
       setForm((f) => ({ ...f, full_name: '', email: '', phone: '' }))
     } else {
-      setStatus({ ok: false, message: res.error })
+      // Covers "fully booked", validation, and DB errors — all carry a message.
+      setStatus({ ok: false, message: res.message || res.error })
     }
   }
 
@@ -118,8 +128,8 @@ export default function RoomDetail() {
               <span className="amt">{naira(room.price)}</span>
               <span className="per">/ night</span>
             </div>
-            <Field label="Check-in" name="check_in" type="date" value={form.check_in} onChange={set('check_in')} />
-            <Field label="Check-out" name="check_out" type="date" value={form.check_out} onChange={set('check_out')} />
+            <Field label="Check-in" name="check_in" type="date" value={form.check_in} onChange={set('check_in')} required />
+            <Field label="Check-out" name="check_out" type="date" value={form.check_out} onChange={set('check_out')} required />
             <Select
               label="Guests"
               name="guests"

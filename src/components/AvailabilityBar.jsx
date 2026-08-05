@@ -4,7 +4,16 @@ import { insertInto } from '../lib/db'
 // The dark inline "Check Availability" widget used on Rooms, Restaurant,
 // Boardroom and Event Hall. Captures a lightweight lead into
 // `availability_requests` (space + details as JSON).
-export default function AvailabilityBar({ space, fields, buttonLabel = 'Check Availability', style }) {
+// `onCheck(values) => Promise<{ ok, message }>` — when provided (e.g. the Rooms
+// bar, which checks real stock/dates), it runs instead of the default
+// lead-capture insert.
+export default function AvailabilityBar({
+  space,
+  fields,
+  buttonLabel = 'Check Availability',
+  onCheck,
+  style,
+}) {
   const initial = Object.fromEntries(fields.map((f) => [f.name, f.default ?? '']))
   const [values, setValues] = useState(initial)
   const [status, setStatus] = useState(null)
@@ -16,13 +25,17 @@ export default function AvailabilityBar({ space, fields, buttonLabel = 'Check Av
     e.preventDefault()
     setBusy(true)
     setStatus(null)
-    const res = await insertInto('availability_requests', { space, details: values })
-    setBusy(false)
-    if (res.ok) {
-      setStatus({ ok: true, message: 'Thanks — we’ll confirm availability by email shortly.' })
+    let result
+    if (onCheck) {
+      result = await onCheck(values)
     } else {
-      setStatus({ ok: false, message: res.error })
+      const res = await insertInto('availability_requests', { space, details: values })
+      result = res.ok
+        ? { ok: true, message: 'Thanks — we’ll confirm availability by email shortly.' }
+        : { ok: false, message: res.error }
     }
+    setBusy(false)
+    setStatus(result)
   }
 
   return (

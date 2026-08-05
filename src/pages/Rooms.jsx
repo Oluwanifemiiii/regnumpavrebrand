@@ -2,8 +2,34 @@ import { Link } from 'react-router-dom'
 import Placeholder from '../components/Placeholder.jsx'
 import AvailabilityBar from '../components/AvailabilityBar.jsx'
 import { rooms, naira } from '../data/rooms.js'
+import { checkRoomAvailability } from '../lib/db'
 
 export default function Rooms() {
+  // Runs the real, date-aware stock check for the Rooms availability bar.
+  const checkAvailability = async (v) => {
+    if (!v.room_type) return { ok: false, message: 'Please choose a room type.' }
+    if (!v.check_in || !v.check_out)
+      return { ok: false, message: 'Please choose check-in and check-out dates.' }
+    if (v.check_out <= v.check_in)
+      return { ok: false, message: 'Check-out must be after check-in.' }
+
+    const res = await checkRoomAvailability({
+      roomType: v.room_type,
+      checkIn: v.check_in,
+      checkOut: v.check_out,
+    })
+    if (!res.ok) return { ok: false, message: res.error }
+    if (!res.found) return { ok: false, message: 'That room type wasn’t found.' }
+    if (res.available <= 0)
+      return { ok: false, message: `Sorry, the ${v.room_type} is fully booked for those dates.` }
+
+    const unit = res.available === 1 ? 'room' : 'rooms'
+    return {
+      ok: true,
+      message: `Good news — ${res.available} ${unit} available for your dates. Pick a room below to book.`,
+    }
+  }
+
   return (
     <>
       <header className="page-header">
@@ -18,7 +44,15 @@ export default function Rooms() {
       <AvailabilityBar
         space="rooms"
         style={{ margin: '0 var(--gutter) 80px' }}
+        onCheck={checkAvailability}
         fields={[
+          {
+            name: 'room_type',
+            label: 'Room type',
+            type: 'select',
+            options: rooms.map((r) => r.name),
+            placeholder: 'Any room',
+          },
           { name: 'check_in', label: 'Check-in', type: 'date' },
           { name: 'check_out', label: 'Check-out', type: 'date' },
           {
