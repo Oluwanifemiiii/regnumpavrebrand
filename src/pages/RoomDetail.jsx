@@ -65,14 +65,12 @@ export default function RoomDetail() {
         <span className="current">{room.name}</span>
       </div>
 
-      {/* Gallery */}
+      {/* Gallery — bento grid */}
       <section style={{ padding: '0 var(--gutter)' }}>
-        <div className="gallery-hero">
-          <Placeholder className="main" src={room.img} alt={room.name} tone={room.tone} caption={`${room.name.toLowerCase()} — hero shot, wide angle`} />
-          <div className="side">
-            <Placeholder src={room.bathroom} alt={`${room.name} bathroom`} tone="#d5cfc5" caption="bathroom detail" />
-            <Placeholder src={room.sittingArea} alt={`${room.name} sitting area`} tone="#e0dbd3" caption="sitting area — window view" />
-          </div>
+        <div className="room-bento">
+          {(room.gallery || [room.img, room.bathroom, room.sittingArea]).slice(0, 5).map((src, i) => (
+            <Placeholder key={src} src={src} alt={`${room.name} — view ${i + 1}`} tone={room.tone} />
+          ))}
         </div>
       </section>
 

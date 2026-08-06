@@ -61,15 +61,19 @@ export default function Restaurant() {
     e.preventDefault()
     setBusy(true)
     setStatus(null)
-    const res = await insertInto('restaurant_reservations', {
-      full_name: form.full_name,
-      email: form.email,
-      phone: form.phone || null,
-      guests: form.guests ? Number(form.guests) : null,
-      reserved_date: form.reserved_date || null,
-      reserved_time: form.reserved_time || null,
-      special_requests: form.special_requests || null,
-    })
+    const res = await insertInto(
+      'restaurant_reservations',
+      {
+        full_name: form.full_name,
+        email: form.email,
+        phone: form.phone || null,
+        guests: form.guests ? Number(form.guests) : null,
+        reserved_date: form.reserved_date || null,
+        reserved_time: form.reserved_time || null,
+        special_requests: form.special_requests || null,
+      },
+      'New restaurant reservation'
+    )
     setBusy(false)
     if (res.ok) {
       setStatus({ ok: true, message: 'Table request received — we’ll confirm your reservation by email.' })

@@ -105,15 +105,19 @@ export default function EventHall() {
     e.preventDefault()
     setBusy(true)
     setStatus(null)
-    const res = await insertInto('event_enquiries', {
-      full_name: form.full_name,
-      email: form.email,
-      phone: form.phone || null,
-      event_type: form.event_type || null,
-      preferred_date: form.preferred_date || null,
-      expected_guests: form.expected_guests ? Number(form.expected_guests) : null,
-      message: form.message || null,
-    })
+    const res = await insertInto(
+      'event_enquiries',
+      {
+        full_name: form.full_name,
+        email: form.email,
+        phone: form.phone || null,
+        event_type: form.event_type || null,
+        preferred_date: form.preferred_date || null,
+        expected_guests: form.expected_guests ? Number(form.expected_guests) : null,
+        message: form.message || null,
+      },
+      `New event enquiry${form.event_type ? ` — ${form.event_type}` : ''}`
+    )
     setBusy(false)
     if (res.ok) {
       setStatus({ ok: true, message: 'Enquiry sent — our events team will be in touch within 24 hours.' })

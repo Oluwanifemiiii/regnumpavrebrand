@@ -29,7 +29,11 @@ export default function AvailabilityBar({
     if (onCheck) {
       result = await onCheck(values)
     } else {
-      const res = await insertInto('availability_requests', { space, details: values })
+      const res = await insertInto(
+        'availability_requests',
+        { space, details: values },
+        `New availability request — ${space}`
+      )
       result = res.ok
         ? { ok: true, message: 'Thanks — we’ll confirm availability by email shortly.' }
         : { ok: false, message: res.error }

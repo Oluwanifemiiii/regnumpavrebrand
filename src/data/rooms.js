@@ -10,6 +10,7 @@ export const rooms = [
     img: '/single-room.jpg',
     bathroom: '/bath-single.jpg',
     sittingArea: '/sitting-single.jpg',
+    gallery: ['/single-room.jpg', '/single-2.jpg', '/single-3.jpg', '/bath-single.jpg', '/sitting-single.jpg'],
     blurb: 'A tidy, comfortable room for one — everything you need for a restful stay.',
     longDescription:
       'A compact, well-kept room built for a solo traveller. A comfortable bed, quiet air conditioning, and a clean ensuite — simple, affordable, and easy to settle into after a long day.',
@@ -38,6 +39,7 @@ export const rooms = [
     img: '/standard-room.jpg',
     bathroom: '/bath-standard.jpg',
     sittingArea: '/sitting-standard.jpg',
+    gallery: ['/standard-room.jpg', '/standard-2.jpg', '/standard-3.jpg', '/bath-standard.jpg', '/sitting-standard.jpg'],
     blurb: 'A clean, quiet retreat with everything you need and nothing you don’t.',
     longDescription:
       'A calm, well-proportioned room with a double bed, a work desk, and the essentials done properly. Ideal for a solo traveller or a couple who value quiet over clutter.',
@@ -68,6 +70,7 @@ export const rooms = [
     img: '/deluxe-room.jpg',
     bathroom: '/bath-deluxe.jpg',
     sittingArea: '/sitting-deluxe.jpg',
+    gallery: ['/deluxe-room.jpg', '/deluxe-2.jpg', '/deluxe-3.jpg', '/bath-deluxe.jpg', '/sitting-deluxe.jpg'],
     blurb: 'More space, a sitting area, and a view worth waking up for.',
     longDescription:
       'More space to settle in, a comfortable sitting area by the window, and the kind of quiet that makes you forget you’re in Lagos. The Deluxe pairs a generous bed with a proper desk and morning light that makes the room feel twice its size.',
@@ -100,6 +103,7 @@ export const rooms = [
     img: '/twin-bed-room.jpg',
     bathroom: '/bath-twin.jpg',
     sittingArea: '/sitting-twin.jpg',
+    gallery: ['/twin-bed-room.jpg', '/twin-2.jpg', '/twin-3.jpg', '/bath-twin.jpg', '/sitting-twin.jpg'],
     blurb: 'Two full beds and room to spread out — made for friends, family, or colleagues.',
     longDescription:
       'Our most spacious room, with two full beds and plenty of room between them. Perfect for friends, colleagues travelling together, or a family — the same comfort and finish as the Deluxe, with twice the sleeping space.',

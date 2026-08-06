@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase'
+import { sendEmail } from './email'
 
 const notConfiguredMessage =
   'The database isn’t connected yet. Add your Supabase keys to .env.local to start saving submissions.'
@@ -6,9 +7,11 @@ const notConfiguredMessage =
 // Central place every form submits through. Returns a plain result object so
 // components can render success / error states without try/catch noise.
 //
-//   const { ok, error } = await insertInto('contact_messages', {...})
+//   const { ok, error } = await insertInto('contact_messages', {...}, 'New message')
 //
-export async function insertInto(table, row) {
+// Pass `emailSubject` to also send an email notification of the submission
+// (best-effort — see ./email).
+export async function insertInto(table, row, emailSubject) {
   if (!isSupabaseConfigured) {
     // No backend yet — log the payload so the flow is testable locally, and
     // tell the user honestly rather than pretending it was saved.
@@ -25,6 +28,9 @@ export async function insertInto(table, row) {
     console.error(`[Regnum] Insert into "${table}" failed:`, error)
     return { ok: false, error: friendlyError(error) }
   }
+
+  // Fire-and-forget email so a failed notification never blocks the success UI.
+  if (emailSubject) sendEmail(emailSubject, row)
 
   return { ok: true }
 }
@@ -72,7 +78,11 @@ export async function bookRoom(payload) {
     return { ok: false, error: friendlyError(error) }
   }
   const row = Array.isArray(data) ? data[0] : data
-  return { ok: row?.ok === true, available: row?.available, message: row?.message }
+  const ok = row?.ok === true
+  // Email the confirmed booking (best-effort). Only on a real booking, not on
+  // a "fully booked" / validation response.
+  if (ok) sendEmail(`New room booking — ${payload.room_type}`, payload)
+  return { ok, available: row?.available, message: row?.message }
 }
 
 // Turn Postgres/PostgREST errors into something a visitor can read.

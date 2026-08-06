@@ -19,12 +19,16 @@ export default function Contact() {
     e.preventDefault()
     setBusy(true)
     setStatus(null)
-    const res = await insertInto('contact_messages', {
-      full_name: form.full_name,
-      email: form.email,
-      subject: form.subject || null,
-      message: form.message,
-    })
+    const res = await insertInto(
+      'contact_messages',
+      {
+        full_name: form.full_name,
+        email: form.email,
+        subject: form.subject || null,
+        message: form.message,
+      },
+      `New contact message${form.subject ? ` — ${form.subject}` : ''}`
+    )
     setBusy(false)
     if (res.ok) {
       setStatus({ ok: true, message: 'Message sent — we’ll respond within 24 hours on business days.' })

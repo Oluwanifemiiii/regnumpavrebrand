@@ -40,15 +40,19 @@ export default function Boardroom() {
     e.preventDefault()
     setBusy(true)
     setStatus(null)
-    const res = await insertInto('boardroom_bookings', {
-      booking_date: form.booking_date || null,
-      duration: form.duration || null,
-      attendees: form.attendees ? Number(form.attendees) : null,
-      catering: form.catering === 'Yes',
-      full_name: form.full_name,
-      email: form.email,
-      notes: form.notes || null,
-    })
+    const res = await insertInto(
+      'boardroom_bookings',
+      {
+        booking_date: form.booking_date || null,
+        duration: form.duration || null,
+        attendees: form.attendees ? Number(form.attendees) : null,
+        catering: form.catering === 'Yes',
+        full_name: form.full_name,
+        email: form.email,
+        notes: form.notes || null,
+      },
+      'New boardroom booking'
+    )
     setBusy(false)
     if (res.ok) {
       setStatus({ ok: true, message: 'Booking submitted — we’ll confirm within 2 hours during business hours.' })
