@@ -5,7 +5,7 @@ const experiences = [
   {
     to: '/rooms',
     name: 'Rooms',
-    blurb: 'Rest, refined. From ₦80,000 per night.',
+    blurb: 'Rest, refined. From ₦50,000 per night.',
     img: '/roompic.jpg',
     caption: 'hotel room — crisp linens',
     tone: '#ddd8ce',

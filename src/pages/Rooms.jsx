@@ -36,7 +36,7 @@ export default function Rooms() {
         <div className="eyebrow">Accommodation</div>
         <h1 className="h1">Your room is ready.</h1>
         <p className="lead">
-          Three room types, each designed for comfort and quiet. All rates include breakfast and
+          Four room types, each designed for comfort and quiet. All rates include breakfast and
           Wi-Fi.
         </p>
       </header>

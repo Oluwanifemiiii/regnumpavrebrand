@@ -12,7 +12,7 @@ export default function Footer() {
           <p>
             13 Olayemi Road, Alaja Extension
             <br />
-            Ipaja, Lagos 100278
+            Ayobo, Lagos
           </p>
         </div>
 

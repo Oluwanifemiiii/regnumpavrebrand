@@ -135,7 +135,7 @@ export default function EventHall() {
             <br />
             our stage.
           </h1>
-          <p>800 square metres of flexible, full-service event space in the heart of Ipaja.</p>
+          <p>800 square metres of flexible, full-service event space in the heart of Ayobo.</p>
         </div>
       </section>
 

@@ -24,7 +24,7 @@ const directions = [
   },
   {
     title: 'By Taxi / Ride-hail',
-    body: 'Search "Regnum Pavilion, Olayemi Road, Ipaja" on Bolt or Uber. The pin drops directly at our entrance. Tell your driver to look for the bronze gate.',
+    body: 'Search "Regnum Pavilion, Olayemi Road, Ayobo" on Bolt or Uber. The pin drops directly at our entrance. Tell your driver to look for the bronze gate.',
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <rect x="3" y="6" width="14" height="10" rx="2" stroke="#1A1714" strokeWidth="1.2" />
@@ -36,16 +36,17 @@ const directions = [
 ]
 
 const nearby = [
-  ['Ipaja Market', '5 min drive'],
+  ['Ayobo Market', '5 min drive'],
   ['Command Secondary School', '8 min drive'],
   ['Ikeja City Mall', '25 min drive'],
   ['MMA Airport', '35 min drive'],
 ]
 
-// Google Maps embed pointed at Ipaja, Lagos (no API key required for the
-// public embed iframe). Swap the query for exact coordinates when available.
+// Google Maps embed pointed at Ayobo, Lagos (no API key required for the
+// public embed iframe). Swap the query for the exact street address or
+// coordinates when available.
 const MAP_SRC =
-  'https://www.google.com/maps?q=Ipaja,+Lagos,+Nigeria&output=embed'
+  'https://www.google.com/maps?q=Ayobo,+Lagos,+Nigeria&output=embed'
 
 export default function Location() {
   return (
@@ -60,14 +61,14 @@ export default function Location() {
           Alaja Extension.
         </h1>
         <p style={{ fontSize: 18, color: 'var(--ink-40)', marginTop: 16 }}>
-          Ipaja, Lagos 100278, Nigeria
+          Ayobo, Lagos, Nigeria
         </p>
       </header>
 
       {/* Map */}
       <div className="map-box">
         <iframe
-          title="Map — Regnum Pavilion, Ipaja, Lagos"
+          title="Map — Regnum Pavilion, Ayobo, Lagos"
           src={MAP_SRC}
           style={{ border: 0, width: '100%', height: '100%' }}
           loading="lazy"

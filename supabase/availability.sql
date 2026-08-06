@@ -22,12 +22,19 @@ create table if not exists public.room_types (
   stock  integer not null default 1 check (stock >= 0)
 );
 
--- Seed / keep in sync. Adjust the stock numbers to the real unit counts.
+-- Seed / keep in sync with src/data/rooms.js. Adjust the stock numbers to the
+-- real count of physical units for each room type.
 insert into public.room_types (slug, name, stock) values
-  ('standard-room',  'Standard Room',  10),
-  ('deluxe-room',    'Deluxe Room',     6),
-  ('pavilion-suite', 'Pavilion Suite',  3)
-on conflict (slug) do nothing;
+  ('single-room',   'Single Room',    8),
+  ('standard-room', 'Standard Room', 10),
+  ('deluxe-room',   'Deluxe Room',    6),
+  ('twin-bed-room', 'Twin Bed Room',  4)
+on conflict (slug) do update
+  set name = excluded.name, stock = excluded.stock;
+
+-- Remove any room types no longer offered (e.g. the retired Pavilion Suite).
+delete from public.room_types
+where slug not in ('single-room', 'standard-room', 'deluxe-room', 'twin-bed-room');
 
 -- Room types are public, non-sensitive → anyone may read them.
 alter table public.room_types enable row level security;

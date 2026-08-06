@@ -105,7 +105,7 @@ export default function Nav() {
             <Link to="/contact" className="btn btn-bronze btn-block">
               Book Now
             </Link>
-            <p>13 Olayemi Road, Ipaja, Lagos</p>
+            <p>13 Olayemi Road, Ayobo, Lagos</p>
           </div>
         </div>
       )}
