@@ -3,10 +3,10 @@ import { Field, Select, Textarea, FormStatus } from '../components/Field.jsx'
 import { insertInto } from '../lib/db'
 
 const departments = [
-  ['Reservations', 'Room bookings & accommodation', 'reservations@regnumpavilion.com', '+234 801 234 5678'],
-  ['Events', 'Event hall & boardroom bookings', 'events@regnumpavilion.com', '+234 801 234 5679'],
-  ['Restaurant', 'Table reservations & dining inquiries', 'dining@regnumpavilion.com', '+234 801 234 5680'],
-  ['General', 'Everything else & general inquiries', 'hello@regnumpavilion.com', '+234 801 234 5670'],
+  ['Reservations', 'Room bookings & accommodation', 'reservations@regnumpav.com', '+234 805 585 8611'],
+  ['Events', 'Event hall & boardroom bookings', 'reservations@regnumpav.com', '+234 904 111 0000'],
+  ['Restaurant', 'Table reservations & dining inquiries', 'reservations@regnumpav.com', '+234 902 111 0000'],
+  ['General', 'Everything else & general inquiries', 'info@regnumpav.com', '+234 903 977 8271'],
 ]
 
 export default function Contact() {
