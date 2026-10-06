@@ -1,3 +1,4 @@
+import { addDays, todayISO } from '../lib/dates'
 import { useState } from 'react'
 import { insertInto } from '../lib/db'
 
@@ -74,7 +75,7 @@ export default function AvailabilityBar({
                 value={values[f.name]}
                 onChange={update(f.name)}
                 placeholder={f.placeholder}
-                min={f.min}
+                min={f.type === 'date' ? (f.name === 'check_out' && values.check_in ? addDays(values.check_in, 1) : f.min || todayISO()) : f.min}
               />
             )}
           </div>

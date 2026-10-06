@@ -3,6 +3,7 @@ import Placeholder from '../components/Placeholder.jsx'
 import AvailabilityBar from '../components/AvailabilityBar.jsx'
 import { rooms, naira } from '../data/rooms.js'
 import { checkRoomAvailability } from '../lib/db'
+import { todayISO } from '../lib/dates'
 
 export default function Rooms() {
   // Runs the real, date-aware stock check for the Rooms availability bar.
@@ -10,6 +11,8 @@ export default function Rooms() {
     if (!v.room_type) return { ok: false, message: 'Please choose a room type.' }
     if (!v.check_in || !v.check_out)
       return { ok: false, message: 'Please choose check-in and check-out dates.' }
+    if (v.check_in < todayISO())
+      return { ok: false, message: 'Check-in can’t be in the past. Please choose today or a later date.' }
     if (v.check_out <= v.check_in)
       return { ok: false, message: 'Check-out must be after check-in.' }
 
@@ -85,7 +88,7 @@ export default function Rooms() {
               {room.blurb}
             </p>
             <div className="room-mini-specs">
-              {['Size', 'Occupancy', 'Bed', 'View'].map((k) => (
+              {['Size', 'Occupancy', 'Bed'].map((k) => (
                 <div className="spec-row" key={k}>
                   <span className="k">{k}</span>
                   <span className="v">{room.specs[k]}</span>

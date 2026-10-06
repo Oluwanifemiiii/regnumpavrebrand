@@ -13,3 +13,5 @@ handoff_raw
 .claude
 # Pristine backups of original (pre-optimization) images
 .image-originals
+.vercel
+.env*

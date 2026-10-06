@@ -1,3 +1,5 @@
+import { todayISO } from '../lib/dates'
+
 // Small presentational form primitives sharing the underline field style.
 
 export function Field({ label, name, type = 'text', value, onChange, placeholder, required, ...rest }) {
@@ -18,6 +20,7 @@ export function Field({ label, name, type = 'text', value, onChange, placeholder
         onChange={onChange}
         placeholder={placeholder}
         required={required}
+        min={type === 'date' ? todayISO() : undefined}
         {...rest}
       />
     </div>

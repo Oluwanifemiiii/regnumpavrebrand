@@ -1,98 +1,73 @@
-import { supabase, isSupabaseConfigured } from './supabase'
 import { sendEmail } from './email'
 
-const notConfiguredMessage =
-  'The database isn’t connected yet. Add your Supabase keys to .env.local to start saving submissions.'
+// All data now goes through the Regnum reservations API (the staff app, backed
+// by Neon Postgres). The browser never talks to the database directly.
+//   VITE_API_BASE  e.g. https://staff.regnumpav.com   (no trailing slash)
+const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
+export const isApiConfigured = Boolean(API_BASE)
 
-// Central place every form submits through. Returns a plain result object so
-// components can render success / error states without try/catch noise.
+const notConfiguredMessage =
+  'The booking system isn’t connected yet. Set VITE_API_BASE to the reservations API URL.'
+
+async function api(path, { method = 'GET', body } = {}) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  const json = await res.json().catch(() => ({}))
+  return { httpOk: res.ok, json }
+}
+
+// Central place every enquiry form submits through. Returns a plain result
+// object so components can render success / error states without try/catch noise.
 //
 //   const { ok, error } = await insertInto('contact_messages', {...}, 'New message')
-//
-// Pass `emailSubject` to also send an email notification of the submission
-// (best-effort — see ./email).
 export async function insertInto(table, row, emailSubject) {
-  if (!isSupabaseConfigured) {
-    // No backend yet — log the payload so the flow is testable locally, and
-    // tell the user honestly rather than pretending it was saved.
-    console.info(`[Regnum] Supabase not configured. Would insert into "${table}":`, row)
+  if (!isApiConfigured) {
+    console.info(`[Regnum] API not configured. Would submit to "${table}":`, row)
     return { ok: false, notConfigured: true, error: notConfiguredMessage }
   }
-
-  // Insert only — we intentionally do NOT chain .select(), because the public
-  // (anon) key is granted INSERT but not SELECT on these tables. Reading the
-  // row back would require a SELECT policy and defeat that privacy design.
-  const { error } = await supabase.from(table).insert(row)
-
-  if (error) {
-    console.error(`[Regnum] Insert into "${table}" failed:`, error)
-    return { ok: false, error: friendlyError(error) }
+  try {
+    const { httpOk, json } = await api(`/api/public/forms/${table}`, { method: 'POST', body: row })
+    if (!httpOk) return { ok: false, error: json.error || 'Something went wrong. Please try again.' }
+  } catch (err) {
+    console.error(`[Regnum] Submit to "${table}" failed:`, err)
+    return { ok: false, error: 'We couldn’t reach the server. Please try again.' }
   }
-
   // Fire-and-forget email so a failed notification never blocks the success UI.
   if (emailSubject) sendEmail(emailSubject, row)
-
   return { ok: true }
 }
 
-// Date-aware room availability. Calls the `check_room_availability` SQL
-// function, which returns only counts (never booking rows). Returns e.g.
-//   { ok: true, found: true, total: 6, booked: 2, available: 4 }
+// Date-aware room availability (counts only). Returns e.g.
+//   { ok: true, found: true, total: 6, available: 4 }
 export async function checkRoomAvailability({ roomType, checkIn, checkOut }) {
-  if (!isSupabaseConfigured) {
-    return { ok: false, notConfigured: true, error: notConfiguredMessage }
+  if (!isApiConfigured) return { ok: false, notConfigured: true, error: notConfiguredMessage }
+  try {
+    const q = new URLSearchParams({ room_type: roomType, check_in: checkIn, check_out: checkOut })
+    const { httpOk, json } = await api(`/api/public/availability?${q}`)
+    if (!httpOk) return { ok: false, error: json.error || 'Could not check availability.' }
+    return { ok: true, found: json.found, total: json.total, available: json.available }
+  } catch (err) {
+    console.error('[Regnum] availability check failed:', err)
+    return { ok: false, error: 'We couldn’t reach the server. Please try again.' }
   }
-  const { data, error } = await supabase.rpc('check_room_availability', {
-    p_room_type: roomType,
-    p_check_in: checkIn,
-    p_check_out: checkOut,
-  })
-  if (error) {
-    console.error('[Regnum] check_room_availability failed:', error)
-    return { ok: false, error: friendlyError(error) }
-  }
-  const row = Array.isArray(data) ? data[0] : data
-  if (!row) return { ok: true, found: false }
-  return { ok: true, found: true, total: row.total, booked: row.booked, available: row.available }
 }
 
-// Atomic room booking via the `book_room` SQL function: it re-checks
-// availability under a lock and inserts only if a unit is free, so the site
-// can never overbook. Returns { ok, available, message }.
-export async function bookRoom(payload) {
-  if (!isSupabaseConfigured) {
-    return { ok: false, notConfigured: true, error: notConfiguredMessage }
+// Submits a booking. Two modes, decided by the server:
+//   • Online payment live  → pass { payment_reference } (the Paystack reference of a deposit the guest
+//     has just paid). The server verifies it with Paystack and creates the CONFIRMED reservation.
+//   • Not live             → pass the booking details; saved as a PENDING request the front desk confirms.
+//   → { ok, status: 'confirmed' | 'pending', reservationRef, message } or { ok: false, error, roomTaken }
+export async function submitBooking(payload) {
+  if (!isApiConfigured) return { ok: false, error: notConfiguredMessage }
+  try {
+    const { httpOk, json } = await api('/api/public/reservations', { method: 'POST', body: payload })
+    if (!httpOk) return { ok: false, error: json.error || 'We couldn’t take your booking. Please try again.', roomTaken: json.code === 'ROOM_UNAVAILABLE' }
+    return { ok: true, status: json.status, reservationRef: json.reference, message: json.message }
+  } catch (err) {
+    console.error('[Regnum] submitBooking failed:', err)
+    return { ok: false, error: 'We couldn’t reach the server. Please try again.' }
   }
-  const { data, error } = await supabase.rpc('book_room', {
-    p_room_type: payload.room_type,
-    p_check_in: payload.check_in,
-    p_check_out: payload.check_out,
-    p_guests: payload.guests ?? null,
-    p_full_name: payload.full_name,
-    p_email: payload.email,
-    p_phone: payload.phone ?? null,
-    p_notes: payload.notes ?? null,
-  })
-  if (error) {
-    console.error('[Regnum] book_room failed:', error)
-    return { ok: false, error: friendlyError(error) }
-  }
-  const row = Array.isArray(data) ? data[0] : data
-  const ok = row?.ok === true
-  // Email the confirmed booking (best-effort). Only on a real booking, not on
-  // a "fully booked" / validation response.
-  if (ok) sendEmail(`New room booking — ${payload.room_type}`, payload)
-  return { ok, available: row?.available, message: row?.message }
-}
-
-// Turn Postgres/PostgREST errors into something a visitor can read.
-function friendlyError(error) {
-  if (error.code === '42501') {
-    return 'Submission was blocked by the database. (Run the RLS policies from supabase/schema.sql.)'
-  }
-  // Availability/booking function not created yet.
-  if (error.code === 'PGRST202' || /Could not find the function/i.test(error.message || '')) {
-    return 'Availability isn’t set up yet. (Run supabase/availability.sql in the Supabase SQL editor.)'
-  }
-  return error.message || 'Something went wrong. Please try again.'
 }

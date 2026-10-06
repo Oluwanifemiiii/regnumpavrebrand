@@ -1,6 +1,6 @@
 // Room catalogue — drives the Rooms listing and the room detail pages.
 // `slug` is used in the URL: /rooms/deluxe-room
-// `name` MUST match the room_types.name values in supabase/availability.sql.
+// `name` MUST match room_types.name in the reservations database.
 
 export const rooms = [
   {
@@ -20,7 +20,6 @@ export const rooms = [
       Size: '18 sqm',
       Occupancy: '1 Guest',
       Bed: 'Single',
-      View: 'Courtyard',
       Bathroom: 'Ensuite, walk-in shower',
       Floor: '1st – 2nd',
     },
@@ -49,7 +48,6 @@ export const rooms = [
       Size: '24 sqm',
       Occupancy: '2 Guests',
       Bed: 'Double',
-      View: 'Garden',
       Bathroom: 'Ensuite, walk-in shower',
       Floor: '1st – 2nd',
     },
@@ -80,7 +78,6 @@ export const rooms = [
       Size: '32 sqm',
       Occupancy: '2 Guests',
       Bed: 'King',
-      View: 'Garden',
       Bathroom: 'Ensuite, rain shower',
       Floor: '2nd – 3rd',
     },
@@ -113,7 +110,6 @@ export const rooms = [
       Size: '38 sqm',
       Occupancy: '2 – 4 Guests',
       Bed: 'Two Doubles',
-      View: 'Garden',
       Bathroom: 'Ensuite, rain shower',
       Floor: '2nd – 3rd',
     },

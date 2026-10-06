@@ -42,6 +42,35 @@ console so you can see what would be stored).
 > Only the **anon (public)** key belongs in `.env.local`. Never put the
 > `service_role` key in front-end code.
 
+## Room deposits via Paystack
+
+Booking a room requires a 50% deposit, paid up front through Paystack, to
+deter spam bookings. Payment is verified **server-side** — the booking is
+only created once `/api/verify-paystack` (a Vercel serverless function)
+confirms the payment with Paystack directly, so nobody can fake a "successful
+payment" in the browser and get a free booking.
+
+1. Run [`supabase/payments.sql`](supabase/payments.sql) in the Supabase SQL
+   Editor, after `schema.sql` and `availability.sql`. It adds payment columns
+   to `room_bookings` and locks the table down so only the server
+   (`service_role` key) can create a booking — the public key no longer can.
+2. Get your keys from the [Paystack dashboard](https://dashboard.paystack.com)
+   → **Settings → API Keys & Webhooks**.
+3. Add `VITE_PAYSTACK_PUBLIC_KEY` to `.env.local` (safe to ship in the client).
+4. In your hosting provider's environment settings (e.g. Vercel → Project →
+   Settings → Environment Variables), add the **server-only** variables —
+   see `.env.example` for the full list and where to find each one:
+   - `PAYSTACK_SECRET_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `VITE_SUPABASE_URL` (reused server-side; not secret)
+   - `RESEND_API_KEY` / `RESEND_FROM_EMAIL` — optional, sends the guest a
+     confirmation email once payment is verified (sign up at
+     [resend.com](https://resend.com) and verify a sending domain). Without
+     these, booking still works — the guest just won't get an email.
+
+Start in Paystack's **test mode** (test keys, test cards) until you're ready
+to go live, then switch to live keys.
+
 ## Where the forms go
 
 | Page / widget                         | Supabase table            |

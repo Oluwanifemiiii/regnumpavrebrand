@@ -1,10 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Placeholder from '../components/Placeholder.jsx'
 import { Field, Select, FormStatus } from '../components/Field.jsx'
 import { getRoom, naira } from '../data/rooms.js'
-import { bookRoom } from '../lib/db'
+import { checkRoomAvailability, submitBooking } from '../lib/db'
+import { isPaystackConfigured, payWithPaystack } from '../lib/paystack'
+import { addDays, todayISO } from '../lib/dates'
 import NotFound from './NotFound.jsx'
+
+function nightsBetween(checkIn, checkOut) {
+  const ms = new Date(checkOut) - new Date(checkIn)
+  return Math.round(ms / 86400000)
+}
 
 export default function RoomDetail() {
   const { slug } = useParams()
@@ -20,15 +27,36 @@ export default function RoomDetail() {
   })
   const [status, setStatus] = useState(null)
   const [busy, setBusy] = useState(false)
+  // Live "rooms left" for the chosen dates, so nobody pays for a room that is gone.
+  const [avail, setAvail] = useState(null) // null = unknown / not asked yet
+
+  useEffect(() => {
+    if (!room || !form.check_in || !form.check_out || form.check_out <= form.check_in) { setAvail(null); return }
+    let stale = false
+    const t = setTimeout(async () => {
+      const res = await checkRoomAvailability({ roomType: room.name, checkIn: form.check_in, checkOut: form.check_out })
+      if (!stale) setAvail(res.ok && res.found ? { available: res.available, total: res.total } : { unknown: true })
+    }, 300)
+    return () => { stale = true; clearTimeout(t) }
+  }, [room, form.check_in, form.check_out])
 
   if (!room) return <NotFound />
 
   const set = (name) => (e) => setForm((f) => ({ ...f, [name]: e.target.value }))
 
+  const nights = form.check_in && form.check_out && form.check_out > form.check_in
+    ? nightsBetween(form.check_in, form.check_out)
+    : 0
+  const deposit = nights > 0 ? Math.round((room.price * nights) / 2) : 0
+
   const onSubmit = async (e) => {
     e.preventDefault()
     if (!form.check_in || !form.check_out) {
       setStatus({ ok: false, message: 'Please choose check-in and check-out dates.' })
+      return
+    }
+    if (form.check_in < todayISO()) {
+      setStatus({ ok: false, message: 'Check-in can’t be in the past. Please choose today or a later date.' })
       return
     }
     if (form.check_out <= form.check_in) {
@@ -37,8 +65,8 @@ export default function RoomDetail() {
     }
     setBusy(true)
     setStatus(null)
-    // book_room checks stock for these dates and only inserts if a unit is free.
-    const res = await bookRoom({
+
+    const booking = {
       room_type: room.name,
       check_in: form.check_in,
       check_out: form.check_out,
@@ -46,14 +74,60 @@ export default function RoomDetail() {
       full_name: form.full_name,
       email: form.email,
       phone: form.phone || null,
-    })
-    setBusy(false)
-    if (res.ok) {
-      setStatus({ ok: true, message: 'Booking request received — we’ll confirm by email shortly.' })
+    }
+
+    // Re-check availability right before taking money: the count on screen may be stale.
+    const fresh = await checkRoomAvailability({ roomType: room.name, checkIn: form.check_in, checkOut: form.check_out })
+    if (!fresh.ok) {
+      setBusy(false)
+      setStatus({ ok: false, message: fresh.error })
+      return
+    }
+    if (fresh.found && fresh.available <= 0) {
+      setAvail({ available: 0, total: fresh.total })
+      setBusy(false)
+      setStatus({ ok: false, message: `Sorry, the ${room.name} was just booked for those dates. Please choose different dates or another room.` })
+      return
+    }
+
+    const finish = (res) => {
+      setBusy(false)
+      if (res.ok && res.status === 'confirmed') {
+        setStatus({ ok: true, message: 'Payment received — your booking is confirmed. Check your email for details.' })
+      } else if (res.ok) {
+        setStatus({ ok: true, message: res.message || 'Your request has been received. Our front desk will confirm it shortly.' })
+      } else {
+        setStatus({ ok: false, message: res.error })
+        if (res.roomTaken) setAvail({ available: 0 })
+        return
+      }
       setForm((f) => ({ ...f, full_name: '', email: '', phone: '' }))
-    } else {
-      // Covers "fully booked", validation, and DB errors — all carry a message.
-      setStatus({ ok: false, message: res.message || res.error })
+    }
+
+    // Online payment isn't switched on yet: save a pending request for the front desk to confirm.
+    if (!isPaystackConfigured) {
+      finish(await submitBooking({ ...booking, notes: null }))
+      return
+    }
+
+    // A 50% deposit is charged up front via Paystack. The booking details ride along in the
+    // transaction metadata, so the server can create the booking even if this tab is closed
+    // right after paying (the Paystack webhook does it too). The room is only booked once the
+    // server has verified the payment.
+    try {
+      await payWithPaystack({
+        email: form.email,
+        amountKobo: deposit * 100,
+        metadata: { booking },
+        onSuccess: async (reference) => finish(await submitBooking({ payment_reference: reference })),
+        onClose: () => {
+          setBusy(false)
+          setStatus((s) => s ?? { ok: false, message: 'Payment window closed — your booking wasn’t completed.' })
+        },
+      })
+    } catch (err) {
+      setBusy(false)
+      setStatus({ ok: false, message: err.message || 'Something went wrong starting payment.' })
     }
   }
 
@@ -127,7 +201,7 @@ export default function RoomDetail() {
               <span className="per">/ night</span>
             </div>
             <Field label="Check-in" name="check_in" type="date" value={form.check_in} onChange={set('check_in')} required />
-            <Field label="Check-out" name="check_out" type="date" value={form.check_out} onChange={set('check_out')} required />
+            <Field label="Check-out" name="check_out" type="date" min={addDays(form.check_in || todayISO(), 1)} value={form.check_out} onChange={set('check_out')} required />
             <Select
               label="Guests"
               name="guests"
@@ -138,8 +212,25 @@ export default function RoomDetail() {
             <Field label="Full name" name="full_name" value={form.full_name} onChange={set('full_name')} placeholder="Your name" required />
             <Field label="Email" name="email" type="email" value={form.email} onChange={set('email')} placeholder="your@email.com" required />
             <Field label="Phone" name="phone" type="tel" value={form.phone} onChange={set('phone')} placeholder="+234" />
-            <button type="submit" className="btn btn-primary btn-block" disabled={busy} style={{ marginTop: 8 }}>
-              {busy ? 'Sending…' : 'Book Now'}
+            {avail && !avail.unknown && (
+              <p className="lead" style={{ fontSize: 13, marginTop: 4 }} role="status">
+                {avail.available === 0
+                  ? <strong>Fully booked for these dates. Please try different dates.</strong>
+                  : avail.available <= 3
+                    ? <><strong>Only {avail.available} {avail.available === 1 ? 'room' : 'rooms'} left</strong> for your dates.</>
+                    : <>{avail.available} rooms available for your dates.</>}
+              </p>
+            )}
+            {deposit > 0 && (
+              <p className="lead" style={{ fontSize: 12, marginTop: 4 }}>
+                {isPaystackConfigured
+                  ? <>Pay a 50% deposit of <strong>{naira(deposit)}</strong> now via Paystack to secure this booking</>
+                  : <>A 50% deposit of <strong>{naira(deposit)}</strong> will be requested by our front desk to secure this booking</>}{' '}
+                ({nights} {nights === 1 ? 'night' : 'nights'}, {naira(room.price * nights)} total).
+              </p>
+            )}
+            <button type="submit" className="btn btn-primary btn-block" disabled={busy || avail?.available === 0} style={{ marginTop: 8 }}>
+              {busy ? 'Processing…' : avail?.available === 0 ? 'Fully booked for these dates' : isPaystackConfigured ? 'Pay Deposit & Book' : 'Request Booking'}
             </button>
             <FormStatus status={status} />
             <p className="lead" style={{ fontSize: 11, textAlign: 'center', marginTop: 16 }}>
