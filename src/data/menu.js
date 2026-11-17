@@ -150,6 +150,7 @@ export const drinksMenu = [
       ['Four Cousins Red', 20000],
       ['Four Cousins Rosé', 20000],
       ['Four Cousins White', 20000],
+      ['Agor Red Wine', 20000],
     ],
   },
   {
@@ -163,10 +164,33 @@ export const drinksMenu = [
     cat: 'Tequila, Gin & Tots',
     items: [
       ['Olmeca Tequila Bianco', 35000],
+      ['Sierra', 20000],
       ['Gordon Gin', 12000],
       ['Gordon Gin Tot', 2000],
       ['Olmeca Tot', 5000],
     ],
+  },
+  {
+    cat: 'Cognac & Brandy',
+    items: [
+      ['Hennessy VS', 120000],
+      ['Hennessy VSOP', 210000],
+      ['Martell VS', 110000],
+      ['Martell Blue Swift', 190000],
+      ['St Remy VSOP', 45000],
+    ],
+  },
+  {
+    cat: 'Whisky',
+    items: [
+      ['Jack Daniel\'s (Big)', 60000],
+      ['Jack Daniel\'s (Small)', 30000],
+      ['Jameson Black Barrel', 60000],
+    ],
+  },
+  {
+    cat: 'Vodka',
+    items: [['Smirnoff Red Vodka', 40000]],
   },
   {
     cat: 'Bitters',
