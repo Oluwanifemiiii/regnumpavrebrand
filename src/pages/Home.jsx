@@ -1,5 +1,16 @@
 import { Link } from 'react-router-dom'
 import Placeholder from '../components/Placeholder.jsx'
+import HeroCarousel from '../components/HeroCarousel.jsx'
+
+// Hero carousel — the four spaces plus the building, telling the
+// "four spaces, one address" story on load.
+const heroSlides = [
+  { src: '/landingpage.jpg', alt: 'Regnum Pavilion — the building' },
+  { src: '/eventhall.jpg', alt: 'The event hall set for a celebration' },
+  { src: '/restaurant.jpg', alt: 'The restaurant dining room' },
+  { src: '/deluxe-room.jpg', alt: 'A Deluxe guest room' },
+  { src: '/boardroom.jpg', alt: 'The boardroom' },
+]
 
 const experiences = [
   {
@@ -54,14 +65,9 @@ const testimonials = [
 export default function Home() {
   return (
     <>
-      {/* Hero — full-bleed cinematic */}
+      {/* Hero — full-bleed cinematic carousel */}
       <section className="hero-cine">
-        <Placeholder
-          src="/landingpage.jpg"
-          alt="Regnum Pavilion"
-          tone="#d5cfc5"
-          caption="full-bleed hero — restaurant at golden hour or lobby with dramatic shadow play"
-        />
+        <HeroCarousel slides={heroSlides} />
         <div className="hero-cine-overlay">
           <h1 className="hero-title">
             Where every

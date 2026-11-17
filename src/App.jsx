@@ -5,6 +5,7 @@ import Home from './pages/Home.jsx'
 import Rooms from './pages/Rooms.jsx'
 import RoomDetail from './pages/RoomDetail.jsx'
 import Restaurant from './pages/Restaurant.jsx'
+import Menu from './pages/Menu.jsx'
 import Boardroom from './pages/Boardroom.jsx'
 import EventHall from './pages/EventHall.jsx'
 import Location from './pages/Location.jsx'
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/rooms" element={<Rooms />} />
             <Route path="/rooms/:slug" element={<RoomDetail />} />
             <Route path="/restaurant" element={<Restaurant />} />
+            <Route path="/menu" element={<Menu />} />
             <Route path="/boardroom" element={<Boardroom />} />
             <Route path="/events" element={<EventHall />} />
             <Route path="/location" element={<Location />} />

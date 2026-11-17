@@ -3,39 +3,7 @@ import Placeholder from '../components/Placeholder.jsx'
 import AvailabilityBar from '../components/AvailabilityBar.jsx'
 import { Field, Select, Textarea, FormStatus } from '../components/Field.jsx'
 import { insertInto } from '../lib/db'
-
-const menu = [
-  {
-    cat: 'Starters',
-    items: [
-      ['Peppered Snail', 'spiced, grilled, served with plantain crisps'],
-      ['Suya-Spiced Prawns', 'chargrilled, yaji butter, micro greens'],
-      ['Gizdodo Skewers', 'gizzard, fried plantain, bell pepper glaze'],
-    ],
-  },
-  {
-    cat: 'Mains',
-    items: [
-      ['Jollof Risotto', 'smoked tomato, crayfish, parmesan crisp'],
-      ['Grilled Sea Bass', 'ofada sauce, steamed greens, coconut rice'],
-      ['Slow-Braised Short Rib', 'red wine reduction, yam purée, roasted root vegetables'],
-    ],
-  },
-  {
-    cat: 'Desserts',
-    items: [
-      ['Coconut Panna Cotta', 'passion fruit coulis, toasted coconut'],
-      ['Chin Chin Tiramisu', 'spiced chin chin layers, espresso cream'],
-    ],
-  },
-  {
-    cat: 'Drinks',
-    items: [
-      ['Chapman Royale', 'our signature, with bitters and citrus'],
-      ['Palm Wine Spritz', 'fresh palm wine, elderflower, soda'],
-    ],
-  },
-]
+import FullMenu from '../components/FullMenu.jsx'
 
 const hours = [
   ['Monday – Friday', '7 AM – 10 PM'],
@@ -129,23 +97,11 @@ export default function Restaurant() {
         ]}
       />
 
-      {/* Menu teaser */}
-      <section className="section">
-        <div className="eyebrow mb-16">From the Menu</div>
-        <h2 className="h2 mb-48">A taste of what awaits.</h2>
-        <div className="menu-grid">
-          {menu.map((group, i) => (
-            <div className={`menu-col ${i >= 2 ? 'top-border' : ''}`} key={group.cat}>
-              <div className="cat">{group.cat}</div>
-              {group.items.map(([name, desc]) => (
-                <div className="dish" key={name}>
-                  <div className="name">{name}</div>
-                  <p>{desc}</p>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
+      {/* Full menu */}
+      <section className="section" id="menu">
+        <div className="eyebrow mb-16">The Menu</div>
+        <h2 className="h2 mb-48">Food &amp; drinks.</h2>
+        <FullMenu />
       </section>
 
       {/* Image break */}
